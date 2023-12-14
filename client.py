@@ -1,13 +1,12 @@
 import socket
 
 def create_account(username, password):
-    perform_action("create_account", username, password)
+    return perform_action("create_account", username, password)
 
 def login(username, password):
-    perform_action("login", username, password)
     if username in connected_users:
         connected_menu(username)
-
+    return perform_action("login", username, password)
 
 
 def connected_menu(username):
@@ -70,10 +69,10 @@ def perform_action(action, username, password):
 
     # Fermer la connexion
     client.close()
+    return response
 
 if __name__ == "__main__":
     connected_users = set()
-
     while True:
         print("1. Créer un compte")
         print("2. Se connecter")
@@ -84,11 +83,19 @@ if __name__ == "__main__":
         if choice == "1":
             username = input("Entrez le nom d'utilisateur : ")
             password = input("Entrez le mot de passe : ")
-            create_account(username, password)
+            response = create_account(username, password)
+            if "Compte créé avec succès" in response:
+                connected_users.add(username)
+            else:
+                print(response)
         elif choice == "2":
             username = input("Entrez le nom d'utilisateur : ")
             password = input("Entrez le mot de passe : ")
-            login(username, password)
+            response = login(username, password)
+            if "Connexion réussie" in response:
+                connected_users.add(username)
+            else:
+                print(response)
         elif choice == "3":
             break
         else:

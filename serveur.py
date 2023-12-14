@@ -45,6 +45,7 @@ def create_account(client_socket, username, password):
     # Renvoyer la réponse au client
     client_socket.send(response.encode('utf-8'))
     client_socket.close()
+    return response
 
 
 def login(client_socket, username, password):

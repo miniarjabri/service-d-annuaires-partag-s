@@ -38,7 +38,22 @@ def get_annuaire(username):
     perform_action("get_annuaire", username, "")
 
 def ajouter_contact(username):
-    perform_action("ajouter_contact", username, "")
+        # Vérifier si l'utilisateur est connecté
+        if username in connected_users:
+            nom = input("Entrez le nom du contact : ")
+            prenom = input("Entrez le prénom du contact : ")
+            email = input("Entrez l'email du contact : ")
+            telephone = input("Entrez le numéro de téléphone du contact : ")
+
+            # Envoi des données au serveur
+            data = f"ajouter_contact,{username},{nom},{prenom},{email},{telephone}"
+            response = perform_action("ajouter_contact", username, data)
+
+            print(response)
+        else:
+            print("Vous n'êtes pas connecté.")
+
+        perform_action("ajouter_contact", username, "")
 
 def supprimer_contact(username):
     perform_action("supprimer_contact", username, "")

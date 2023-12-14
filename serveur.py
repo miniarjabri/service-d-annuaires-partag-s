@@ -1,8 +1,9 @@
 import socket
 import threading
 
-# Dictionnaire pour stocker les informations d'authentification (à des fins de démonstration uniquement)
-comptes = {}
+# Dictionnaire pour stocker les informations d'authentification et les annuaires
+utilisateurs = {}
+
 
 def handle_client(client_socket):
     # Attendre les données du client
@@ -14,6 +15,16 @@ def handle_client(client_socket):
         create_account(client_socket, username, password)
     elif action == "login":
         login(client_socket, username, password)
+    elif action == "get_annuaire":
+        get_annuaire(client_socket, username)
+    elif action == "ajouter_contact":
+        ajouter_contact(client_socket, username)
+    elif action == "supprimer_contact":
+        supprimer_contact(client_socket, username)
+    elif action == "modifier_contact":
+        modifier_contact(client_socket, username)
+    elif action == "logout":
+        logout(client_socket, username)
     else:
         response = "Action non reconnue."
 
@@ -21,22 +32,25 @@ def handle_client(client_socket):
         client_socket.send(response.encode('utf-8'))
         client_socket.close()
 
+
 def create_account(client_socket, username, password):
     # Vérifier si le compte existe déjà
-    if username in comptes:
+    if username in utilisateurs:
         response = "Le nom d'utilisateur existe déjà. Veuillez choisir un autre nom d'utilisateur."
     else:
-        # Créer le compte
-        comptes[username] = password
+        # Créer le compte avec un annuaire vide
+        utilisateurs[username] = {'password': password, 'annuaire': {}}
         response = "Compte créé avec succès."
 
     # Renvoyer la réponse au client
     client_socket.send(response.encode('utf-8'))
     client_socket.close()
 
+
 def login(client_socket, username, password):
     # Vérifier si les informations d'identification sont correctes
-    if username in comptes and comptes[username] == password:
+    if username in utilisateurs and utilisateurs[username]['password'] == password:
+        connected_users.add(username)
         response = "Connexion réussie."
     else:
         response = "Échec de la connexion. Vérifiez vos informations d'identification."
@@ -44,6 +58,92 @@ def login(client_socket, username, password):
     # Renvoyer la réponse au client
     client_socket.send(response.encode('utf-8'))
     client_socket.close()
+
+
+def logout(client_socket, username):
+    # Vérifier si l'utilisateur est connecté
+    if username in connected_users:
+        connected_users.remove(username)
+        response = "Déconnexion réussie."
+    else:
+        response = "Vous n'êtes pas connecté."
+
+    # Renvoyer la réponse au client
+    client_socket.send(response.encode('utf-8'))
+    client_socket.close()
+
+
+def get_annuaire(client_socket, username):
+    # Vérifier si l'utilisateur est connecté
+    if username in connected_users:
+        annuaire = utilisateurs[username]['annuaire']
+        response = str(annuaire)
+    else:
+        response = "Vous n'êtes pas connecté."
+
+    # Renvoyer la réponse au client
+    client_socket.send(response.encode('utf-8'))
+    client_socket.close()
+
+
+def ajouter_contact(client_socket, username):
+    # Vérifier si l'utilisateur est connecté
+    if username in connected_users:
+        nom, prenom, email, telephone = client_socket.recv(1024).decode('utf-8').split(',')
+
+        # Ajouter le contact à l'annuaire de l'utilisateur
+        utilisateurs[username]['annuaire'][nom] = {'prenom': prenom, 'email': email, 'telephone': telephone}
+        response = "Contact ajouté avec succès."
+    else:
+        response = "Vous n'êtes pas connecté."
+
+    # Renvoyer la réponse au client
+    client_socket.send(response.encode('utf-8'))
+    client_socket.close()
+
+
+def supprimer_contact(client_socket, username):
+    # Vérifier si l'utilisateur est connecté
+    if username in connected_users:
+        nom = client_socket.recv(1024).decode('utf-8')
+
+        # Supprimer le contact de l'annuaire de l'utilisateur
+        if nom in utilisateurs[username]['annuaire']:
+            del utilisateurs[username]['annuaire'][nom]
+            response = "Contact supprimé avec succès."
+        else:
+            response = "Le contact n'existe pas dans votre annuaire."
+    else:
+        response = "Vous n'êtes pas connecté."
+
+    # Renvoyer la réponse au client
+    client_socket.send(response.encode('utf-8'))
+    client_socket.close()
+
+
+def modifier_contact(client_socket, username):
+    # Vérifier si l'utilisateur est connecté
+    if username in connected_users:
+        nom, nouveau_prenom, nouveau_email, nouveau_telephone = client_socket.recv(1024).decode('utf-8').split(',')
+
+        # Vérifier si le contact existe
+        if nom in utilisateurs[username]['annuaire']:
+            # Modifier le contact dans l'annuaire de l'utilisateur
+            utilisateurs[username]['annuaire'][nom] = {
+                'prenom': nouveau_prenom,
+                'email': nouveau_email,
+                'telephone': nouveau_telephone
+            }
+            response = "Contact modifié avec succès."
+        else:
+            response = "Le contact n'existe pas dans votre annuaire."
+    else:
+        response = "Vous n'êtes pas connecté."
+
+    # Renvoyer la réponse au client
+    client_socket.send(response.encode('utf-8'))
+    client_socket.close()
+
 
 def main():
     # Configuration du serveur
@@ -66,5 +166,7 @@ def main():
         client_handler = threading.Thread(target=handle_client, args=(client,))
         client_handler.start()
 
+
 if __name__ == "__main__":
+    connected_users = set()
     main()

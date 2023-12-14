@@ -1,40 +1,70 @@
 import socket
+import threading
 
-class Server:
-    def __init__(self):
-        # Adresse IP du serveur (localhost dans cet exemple)
-        self.HOST = '127.0.0.1'
-        # Port d'écoute du serveur
-        self.PORT = 12345
-        # Créer le Socket Serveur
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # Lier le Socket à une Adresse et un Port
-        self.server_socket.bind((self.HOST, self.PORT))
-        # Écouter les Connexions Entrantes
-        self.server_socket.listen()
+# Dictionnaire pour stocker les informations d'authentification (à des fins de démonstration uniquement)
+comptes = {}
 
-    def start_server(self):
-        print(f"Le serveur écoute sur le port {self.PORT}...")
-        # Accepter les Connexions des Clients
-        client_socket, client_address = self.server_socket.accept()
-        print(f"Connexion établie avec {client_address}")
+def handle_client(client_socket):
+    # Attendre les données du client
+    request = client_socket.recv(1024).decode('utf-8')
+    action, username, password = request.split(',')
 
-        # Gestion de la connexion
-        while True:
-            # Lire les données du client
-            data = client_socket.recv(1024)
-            if not data:
-                break # La connexion a été interrompue
+    # Gérer l'action en fonction de la requête
+    if action == "create_account":
+        create_account(client_socket, username, password)
+    elif action == "login":
+        login(client_socket, username, password)
+    else:
+        response = "Action non reconnue."
 
-            # Traitez les données ici (à adapter selon vos besoins)
-            print(f"Reçu du client ({client_address}): {data.decode('utf-8')}")
-
-            response = "Message reçu par le serveur."
-            client_socket.sendall(response.encode('utf-8'))
-
+        # Renvoyer la réponse au client
+        client_socket.send(response.encode('utf-8'))
         client_socket.close()
-        self.server_socket.close()
+
+def create_account(client_socket, username, password):
+    # Vérifier si le compte existe déjà
+    if username in comptes:
+        response = "Le nom d'utilisateur existe déjà. Veuillez choisir un autre nom d'utilisateur."
+    else:
+        # Créer le compte
+        comptes[username] = password
+        response = "Compte créé avec succès."
+
+    # Renvoyer la réponse au client
+    client_socket.send(response.encode('utf-8'))
+    client_socket.close()
+
+def login(client_socket, username, password):
+    # Vérifier si les informations d'identification sont correctes
+    if username in comptes and comptes[username] == password:
+        response = "Connexion réussie."
+    else:
+        response = "Échec de la connexion. Vérifiez vos informations d'identification."
+
+    # Renvoyer la réponse au client
+    client_socket.send(response.encode('utf-8'))
+    client_socket.close()
+
+def main():
+    # Configuration du serveur
+    host = '127.0.0.1'
+    port = 12345
+
+    # Création du socket du serveur
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind((host, port))
+    server.listen(5)
+
+    print(f"[*] Serveur en attente sur {host}:{port}")
+
+    while True:
+        # Accepter les connexions entrantes
+        client, addr = server.accept()
+        print(f"[*] Connexion acceptée de {addr[0]}:{addr[1]}")
+
+        # Créer un thread pour gérer le client
+        client_handler = threading.Thread(target=handle_client, args=(client,))
+        client_handler.start()
 
 if __name__ == "__main__":
-    server = Server()
-    server.start_server()
+    main()

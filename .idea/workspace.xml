@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="122dff31-f92f-463e-8717-a119c4784af0" name="Changes" comment="-création d'un compte&#10;-log in&#10;-connexion / deconnexion &#10;-ajout d'un contact à l'annuaire&#10;-modifier un contact dans l'annuaire">
+    <list default="true" id="122dff31-f92f-463e-8717-a119c4784af0" name="Changes" comment="-création d'un compte&#10;-log in&#10;-connexion / deconnexion &#10;-ajout d'un contact à l'annuaire&#10;-modifier un contact dans l'annuaire&#10;-suppression d'un contact">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/client.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/serveur.py" beforeDir="false" afterPath="$PROJECT_DIR$/serveur.py" afterDir="false" />
@@ -189,7 +189,7 @@
       <workItem from="1702413895582" duration="3067000" />
       <workItem from="1702473645970" duration="597000" />
       <workItem from="1702550972605" duration="7043000" />
-      <workItem from="1703005161234" duration="8180000" />
+      <workItem from="1703005161234" duration="12028000" />
     </task>
     <task id="LOCAL-00001" summary="Création du Serveur :&#10;&#10;1.Utilisation d'un module comme socket pour créer un serveur TCP qui écoute sur un port spécifique.&#10;2.Mettre en place une gestion basique des connexions des clients.">
       <created>1702413119264</created>
@@ -233,7 +233,14 @@
       <option name="project" value="LOCAL" />
       <updated>1702562390038</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="-création d'un compte&#10;-log in&#10;-connexion / deconnexion &#10;-ajout d'un contact à l'annuaire&#10;-modifier un contact dans l'annuaire&#10;-suppression d'un contact">
+      <created>1703014776661</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1703014776661</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -276,32 +283,28 @@
     <MESSAGE value="Création du Serveur :&#10;&#10;1.Utilisation d'un module comme socket pour créer un serveur TCP qui écoute sur un port spécifique.&#10;2.Mettre en place une gestion basique des connexions des clients." />
     <MESSAGE value="-création d'un compte&#10;-log in" />
     <MESSAGE value="-création d'un compte&#10;-log in&#10;-connexion / deconnexion &#10;-ajout d'un contact à l'annuaire&#10;-modifier un contact dans l'annuaire" />
-    <option name="LAST_COMMIT_MESSAGE" value="-création d'un compte&#10;-log in&#10;-connexion / deconnexion &#10;-ajout d'un contact à l'annuaire&#10;-modifier un contact dans l'annuaire" />
+    <MESSAGE value="-création d'un compte&#10;-log in&#10;-connexion / deconnexion &#10;-ajout d'un contact à l'annuaire&#10;-modifier un contact dans l'annuaire&#10;-suppression d'un contact" />
+    <option name="LAST_COMMIT_MESSAGE" value="-création d'un compte&#10;-log in&#10;-connexion / deconnexion &#10;-ajout d'un contact à l'annuaire&#10;-modifier un contact dans l'annuaire&#10;-suppression d'un contact" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/serveur.py</url>
-          <line>189</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/serveur.py</url>
-          <line>95</line>
+          <line>117</line>
           <option name="timeStamp" value="5" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/client.py</url>
-          <line>38</line>
+          <line>56</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/service_d_annuaires_partag_s$serveur.coverage" NAME="serveur Coverage Results" MODIFIED="1703011111212" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/service_d_annuaires_partag_s$client.coverage" NAME="client Coverage Results" MODIFIED="1703014280696" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/service_d_annuaires_partag_s$serveur.coverage" NAME="serveur Coverage Results" MODIFIED="1703018026236" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/service_d_annuaires_partag_s$client.coverage" NAME="client Coverage Results" MODIFIED="1703018514295" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/service_d_annuaires_partag_s$python_test_server.coverage" NAME="python test_server Coverage Results" MODIFIED="1702416513970" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/service_d_annuaires_partag_s$test_serveur.coverage" NAME="test-serveur Coverage Results" MODIFIED="1702417236447" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>

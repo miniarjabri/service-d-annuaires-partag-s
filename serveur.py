@@ -1,10 +1,17 @@
 import socket
 import threading
-
+import json
 # Dictionnaire pour stocker les informations d'authentification et les annuaires
 utilisateurs = {}
-
-
+def save_connected_users():
+    with open("connected_users.json", "w") as json_file:
+        json.dump(list(connected_users), json_file)
+def load_users():
+    try:
+        with open("utilisateurs.json", "r") as json_file:
+            return json.load(json_file)
+    except FileNotFoundError:
+        return {}
 def handle_client(client_socket):
     # Attendre les données du client
     request = client_socket.recv(1024).decode('utf-8')
@@ -52,7 +59,12 @@ def create_user_file(username):
         user_file.write("Nom,Prénom,Email,Téléphone\n")
 
 def create_account(client_socket, username, password):
-    # Vérifier si le compte existe déjà
+    global utilisateurs
+
+    # Charger les utilisateurs depuis le fichier JSON
+    utilisateurs = load_users()
+
+    # Vérifier si l'utilisateur est dans la liste des utilisateurs
     if username in utilisateurs:
         response = "Le nom d'utilisateur existe déjà. Veuillez choisir un autre nom d'utilisateur."
     else:
@@ -68,7 +80,12 @@ def create_account(client_socket, username, password):
     return response
 
 def login(client_socket, username, password):
-    # Vérifier si les informations d'identification sont correctes
+    global utilisateurs
+
+    # Charger les utilisateurs depuis le fichier JSON
+    utilisateurs = load_users()
+
+    # Vérifier si l'utilisateur est dans la liste des utilisateurs
     if username in utilisateurs and utilisateurs[username]['password'] == password:
         connected_users.add(username)
         response = "Connexion réussie."
@@ -81,8 +98,13 @@ def login(client_socket, username, password):
 
 
 def logout(client_socket, username):
-    # Vérifier si l'utilisateur est connecté
-    if username in connected_users:
+    global utilisateurs
+
+    # Charger les utilisateurs depuis le fichier JSON
+    utilisateurs = load_users()
+
+    # Vérifier si l'utilisateur est dans la liste des utilisateurs
+    if username in utilisateurs:
         connected_users.remove(username)
         response = "Déconnexion réussie."
     else:
@@ -94,8 +116,13 @@ def logout(client_socket, username):
 
 
 def get_annuaire(client_socket, username):
-    # Vérifier si l'utilisateur est connecté
-    if username in connected_users:
+    global utilisateurs
+
+    # Charger les utilisateurs depuis le fichier JSON
+    utilisateurs = load_users()
+
+    # Vérifier si l'utilisateur est dans la liste des utilisateurs
+    if username in utilisateurs:
         annuaire = utilisateurs[username]['annuaire']
         response = str(annuaire)
     else:
@@ -107,8 +134,13 @@ def get_annuaire(client_socket, username):
 
 
 def ajouter_contact(client_socket, username):
-    # Vérifier si l'utilisateur est connecté
-    if username in connected_users:
+    global utilisateurs
+
+    # Charger les utilisateurs depuis le fichier JSON
+    utilisateurs = load_users()
+
+    # Vérifier si l'utilisateur est dans la liste des utilisateurs
+    if username in utilisateurs:
         nom, prenom, email, telephone = client_socket.recv(1024).decode('utf-8').split(',')
 
         # Vérifier si le contact existe déjà dans l'annuaire de l'utilisateur
@@ -133,8 +165,13 @@ def ajouter_contact(client_socket, username):
 
 
 def supprimer_contact(client_socket, username):
-    # Vérifier si l'utilisateur est connecté
-    if username in connected_users:
+    global utilisateurs
+
+    # Charger les utilisateurs depuis le fichier JSON
+    utilisateurs = load_users()
+
+    # Vérifier si l'utilisateur est dans la liste des utilisateurs
+    if username in utilisateurs:
         nom = client_socket.recv(1024).decode('utf-8')
 
         # Supprimer le contact de l'annuaire de l'utilisateur
@@ -152,8 +189,13 @@ def supprimer_contact(client_socket, username):
 
 
 def modifier_contact(client_socket, username):
-    # Vérifier si l'utilisateur est connecté
-    if username in connected_users:
+    global utilisateurs
+
+    # Charger les utilisateurs depuis le fichier JSON
+    utilisateurs = load_users()
+
+    # Vérifier si l'utilisateur est dans la liste des utilisateurs
+    if username in utilisateurs:
         nom, nouveau_prenom, nouveau_email, nouveau_telephone = client_socket.recv(1024).decode('utf-8').split(',')
 
         # Vérifier si le contact existe
@@ -187,15 +229,20 @@ def main():
 
     print(f"[*] Serveur en attente sur {host}:{port}")
 
-    while True:
-        # Accepter les connexions entrantes
-        client, addr = server.accept()
-        print(f"[*] Connexion acceptée de {addr[0]}:{addr[1]}")
+    try:
+        while True:
+            # Accepter les connexions entrantes
+            client, addr = server.accept()
+            print(f"[*] Connexion acceptée de {addr[0]}:{addr[1]}")
 
-        # Créer un thread pour gérer le client
-        client_handler = threading.Thread(target=handle_client, args=(client,))
-        client_handler.start()
+            # Créer un thread pour gérer le client
+            client_handler = threading.Thread(target=handle_client, args=(client,))
+            client_handler.start()
 
+    finally:
+        # Sauvegarder la liste des utilisateurs connectés avant de fermer le serveur
+        save_connected_users()
+        server.close()
 
 if __name__ == "__main__":
     connected_users = set()

@@ -8,7 +8,20 @@ utilisateurs = {}
 def handle_client(client_socket):
     # Attendre les données du client
     request = client_socket.recv(1024).decode('utf-8')
-    action, username, password = request.split(',')
+
+    # Initialiser action pour éviter UnboundLocalError
+    action = None
+
+    split_values = request.split(',')
+    if len(split_values) == 3:
+        action, username, password = split_values
+    else:
+        print("Erreur: La requête n'a pas le format attendu.")
+        # Gérer l'erreur en envoyant une réponse au client
+        response = "Erreur: La requête n'a pas le format attendu."
+        client_socket.send(response.encode('utf-8'))
+        client_socket.close()
+        return
 
     # Gérer l'action en fonction de la requête
     if action == "create_account":
@@ -32,6 +45,11 @@ def handle_client(client_socket):
         client_socket.send(response.encode('utf-8'))
         client_socket.close()
 
+def create_user_file(username):
+    # Create a user-specific file for contacts
+    filename = f"{username}_annuaire.txt"
+    with open(filename, 'w') as user_file:
+        user_file.write("Nom,Prénom,Email,Téléphone\n")
 
 def create_account(client_socket, username, password):
     # Vérifier si le compte existe déjà
@@ -42,11 +60,12 @@ def create_account(client_socket, username, password):
         utilisateurs[username] = {'password': password, 'annuaire': {}}
         response = "Compte créé avec succès."
 
+        # Créer le fichier utilisateur
+        create_user_file(username)
     # Renvoyer la réponse au client
     client_socket.send(response.encode('utf-8'))
     client_socket.close()
     return response
-
 
 def login(client_socket, username, password):
     # Vérifier si les informations d'identification sont correctes
@@ -92,9 +111,19 @@ def ajouter_contact(client_socket, username):
     if username in connected_users:
         nom, prenom, email, telephone = client_socket.recv(1024).decode('utf-8').split(',')
 
-        # Ajouter le contact à l'annuaire de l'utilisateur
-        utilisateurs[username]['annuaire'][nom] = {'prenom': prenom, 'email': email, 'telephone': telephone}
-        response = "Contact ajouté avec succès."
+        # Vérifier si le contact existe déjà dans l'annuaire de l'utilisateur
+        if nom not in utilisateurs[username]['annuaire']:
+            # Ajouter le contact à l'annuaire de l'utilisateur
+            utilisateurs[username]['annuaire'][nom] = {'prenom': prenom, 'email': email, 'telephone': telephone}
+
+            # Ajouter le contact au fichier de l'utilisateur
+            filename = f"{username}_annuaire.txt"
+            with open(filename, 'a') as user_file:
+                user_file.write(f"{nom},{prenom},{email},{telephone}\n")
+
+            response = "Contact ajouté avec succès."
+        else:
+            response = "Le contact existe déjà dans votre annuaire."
     else:
         response = "Vous n'êtes pas connecté."
 

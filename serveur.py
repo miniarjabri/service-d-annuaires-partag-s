@@ -105,7 +105,6 @@ def logout(client_socket, username):
 
     # Vérifier si l'utilisateur est dans la liste des utilisateurs
     if username in utilisateurs:
-        connected_users.remove(username)
         response = "Déconnexion réussie."
     else:
         response = "Vous n'êtes pas connecté."

@@ -41,7 +41,8 @@ def connected_menu(username):
         print("1. Ajouter un contact à l'annuaire")
         print("2. Supprimer un contact de l'annuaire")
         print("3. Modifier un contact de l'annuaire")
-        print("4. Se déconnecter")
+        print("4.affichier mes contacts")
+        print("5. Se déconnecter")
 
         choice = input("Choisissez une option : ")
 
@@ -53,6 +54,8 @@ def connected_menu(username):
         elif choice == "3":
             modifier_contact(username)
         elif choice == "4":
+            get_annuaire(username)
+        elif choice == "5":
             logout(username)
             break
         else:
@@ -65,8 +68,14 @@ def get_annuaire(username):
     perform_action("get_annuaire", username, "")
 
 def ajouter_contact(username):
-    # Vérifier si l'utilisateur est connecté
-    if username in connected_users:
+    global utilisateurs
+
+    # Charger les utilisateurs depuis le fichier JSON
+    utilisateurs = load_users()
+
+    # Vérifier si l'utilisateur est dans la liste des utilisateurs
+    if username in utilisateurs:
+
         # Nom du fichier utilisateur
         filename = utilisateurs[username]['annuaire']
 
@@ -217,13 +226,29 @@ def perform_action(action, username, password):
 
     # Si l'action est de récupérer l'annuaire, imprimer l'annuaire
     if action == "get_annuaire":
-        print(f"Votre annuaire : {response}")
+        # Nom du fichier utilisateur
+        filename = f"{username}_annuaire.txt"
 
+        # Lire les contacts actuels du fichier
+        with open(filename, 'r') as user_file:
+            lines = user_file.readlines()
+
+        if not lines or len(lines) == 1:
+            print("Aucun contact à modifier.")
+            return
+
+        # Afficher les contacts actuels pour que l'utilisateur puisse choisir
+        print("Contacts actuels:")
+        for i, line in enumerate(lines[1:], start=1):
+            print(f"{i}. {line.strip()}")
+
+    if action=="logout" :
+        main()
     # Fermer la connexion
-    client.close()
-    return response
+    #client.close()
+    #return response
 
-if __name__ == "__main__":
+def main():
     utilisateurs = load_users()
 
     while True:
@@ -251,3 +276,5 @@ if __name__ == "__main__":
             break
         else:
             print("Option non valide. Veuillez réessayer.")
+if __name__ == "__main__":
+    main()

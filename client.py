@@ -116,11 +116,12 @@ def add_user():
 
     # Vérifier si le nouvel utilisateur existe déjà
     if new_username not in utilisateurs:
-        if (new_username=="rim" and new_password=="123"):
-            print ("impossible de créer ce compte")
+        if (new_username == "rim" and new_password == "123"):
+            print("impossible de créer ce compte")
         # Créer le compte avec un annuaire vide
         else:
-            utilisateurs[new_username] = {'password': new_password, 'annuaire': {}}
+            annuaire_filename = f"{new_username}_annuaire.txt"
+            utilisateurs[new_username] = {'password': new_password, 'annuaire': annuaire_filename}
 
             print("Utilisateur ajouté avec succès.")
 
@@ -135,11 +136,9 @@ def add_user():
             with open("utilisateurs.json", "a") as json_file:
                 json.dump(utilisateurs, json_file)
             save_users(utilisateurs)
-
-
-
     else:
-        print("Le nom d'utilisateur existe déjà. Veuillez choisir un autre nom d'utilisateur.")
+        print("l'utilisateur existe déja")
+
 
 
 # ----------------------------------------

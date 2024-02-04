@@ -144,7 +144,7 @@ class Server:
                     "message": "Le nom d'utilisateur existe déjà. Veuillez choisir un autre nom d'utilisateur."}
 
                # Créer le compte avec un annuaire vide
-            annuaire_filename = os.path.join(os.getcwd(), f"{username}_annuaire.txt")
+            annuaire_filename = f"{username}_annuaire.txt"
             with open( annuaire_filename, 'w') as user_file:
                 user_file.write("Nom,Prénom,Email,Téléphone\n")
 
@@ -343,5 +343,5 @@ class Server:
 
 if __name__ == "__main__":
     server = Server()
-    #server.run()
-    server.stop_server()
+    server.run()
+    #server.stop_server()

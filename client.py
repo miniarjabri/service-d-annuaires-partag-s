@@ -3,8 +3,8 @@ import json
 
 class Client:
     def __init__(self):
-        self.HOST = '127.0.1.1'
-        self.PORT = 1217
+        self.HOST = '127.1.3.1'
+        self.PORT = 1213
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket.connect((self.HOST, self.PORT))
 

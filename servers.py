@@ -426,10 +426,11 @@ class Server:
 
             if username in self.utilisateurs:
                 # Get the current user data
-                current_data = self.utilisateurs[username]
+                annuaire_filename = f"{new_username}_annuaire.txt"
 
-                self.utilisateurs[new_username] = self.utilisateurs.pop(new_username)
-                return {"status": "success", "message": f"Utilisateur {username} supprimé avec succès."}
+                self.utilisateurs[new_username] = {'password': new_password, 'annuaire': annuaire_filename}
+
+                return {"status": "success", "message": f"Utilisateur {username} modifié avec succès."}
 
 
                 # Save the modified user data

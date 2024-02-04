@@ -66,8 +66,12 @@ class Client:
         return self.send_request("connexion",username)
 
     def add_user(self,new_username,new_password):
-        return self.send_request("ajouter utilisateur",new_username,new_password)
+        return self.send_request("add_user",new_username,new_password)
 
+    def delete_user(self, username):
+        return self.send_request("delete_user", username)
+    def modify_user(self,username,new_password,new_first_name):
+        return self.send_request("modify_user",username,new_password,new_first_name)
 
 
 if __name__ == "__main__":
@@ -102,6 +106,36 @@ if __name__ == "__main__":
                     new_username=input("donner le nom")
                     new_password = input("donner le password")
                     client.add_user(new_username,new_password)
+                if user_choice=="2":
+                    username = input("Entrez le nom de l'utilisateur que vous voulez modifier: ")
+                    client.delete_user(username)
+                if user_choice=="3":
+                    username=input("entrez le nom d'utilisateur à modifier")
+                    print("1. Modifier le prénom")
+                    print("2. Modifier le mot de passe")
+                    print("3. Modifier le prénom et le mot de passe")
+
+
+                    choice = input("Choisissez une option : ")
+
+                    if choice == "1":
+                        new_first_name = input("Entrez le nouveau prénom : ")
+                        new_password=input("retapez votre mot de passe")
+
+                    elif choice == "2":
+
+                        new_password = input("Entrez le nouveau mot de passe : ")
+                        new_first_name = input("retaper votre nom ")
+
+                    elif choice == "3":
+                        new_first_name = input("Entrez le nouveau prénom : ")
+                        new_password = input("Entrez le nouveau mot de passe : ")
+
+                    client.modify_user(username,new_first_name,new_password)
+
+
+                else:
+                    print("Client not found.")
         #---------------------------------------------------
 
             elif connection_type == "2":
@@ -129,15 +163,14 @@ if __name__ == "__main__":
                                 email = input("Entrez l'email du contact : ")
                                 telephone = input("Entrez le numéro de téléphone du contact : ")
                                 client.ajouter_contact(username, nom, prenom, email, telephone)
-                            elif choice == "2":
-                                nom = input("Entrez le nom du contact que vous voulez modifier: ")
-                                prenom = input("Entrez le prénom du contact que vous voulez modifier: ")
-                                response = client.recherche_contact(username, nom, prenom)
-                                if response["status"] == "success":
-                                    print("Client found.")
-                                    client.supprimer_contact(username,nom,prenom)
-                                else:
-                                    print("Client not found.")
+                            if choice == "2":
+                                # Supprimer un utilisateur
+                                username_to_delete = input("Entrez le nom d'utilisateur que vous souhaitez supprimer : ")
+
+                                response = client.delete_user(username_to_delete)
+                                print(response.get("message", "Erreur lors de la suppression de l'utilisateur."))
+
+
 
                             elif choice == "3":
                                 nom = input("Entrez le nom du contact que vous voulez modifier: ")

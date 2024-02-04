@@ -116,18 +116,48 @@ class Server:
                             response = self.supprimer_contact(username, nom,prenom)
                         else:
                             response = {"status": "error", "message": "Missing parameters in the request"}
+
                     elif action == "add_user":
                         new_username, new_password = request.get("params", (None, None))
                         if new_username is not None and new_password is not None:
                             response = self.add_user(new_username, new_password)
                         else:
                             response = {"status": "error", "message": "Missing username or password in the request"}
+                    elif action == "delete_user":
+                        print("Requête de suppression d'utilisateur reçue")
+
+                        # Extract parameters from the "params" key
+                        username = request.get("params", None)
+
+                        if username is not None :
+                            response = self.delete_user(username)
+                        else:
+                            response = {"status": "error", "message": "Missing parameters in the request"}
+                    elif action == "modify_user":
+                        print("Requête de modification d'utilisateur reçue")
+
+                        # Extract parameters from the "params" key
+                        username,new_first_name,new_password = request.get("params", (None,None,None))
+
+                        if username is not None and new_password is not None and new_first_name is not None   :
+                            response = self.modify_user(username,new_first_name,new_password)
+                        else:
+                            response = {"status": "error", "message": "Missing parameters in the request"}
 
 
 
 
                     else:
                         response = {"status": "error", "message": "Invalid action"}
+
+
+
+
+
+
+
+
+
                 else:
                     response = {"status": "error", "message": "Invalid action format in the request"}
 
@@ -373,6 +403,46 @@ class Server:
             except Exception as e:
                 print(f"Error in add_user: {e}")
                 return {"status": "error", "message": "Erreur lors de la création du compte. Veuillez réessayer."}
+
+    def delete_user(self, username):
+        self.utilisateurs = self.load_users()
+        try:
+            if username in self.utilisateurs:
+                annuaire_filename = self.utilisateurs[username]['annuaire']
+                del self.utilisateurs[username]
+                os.remove(annuaire_filename)  # Delete the user's annuaire file
+                self.save_users()
+                return {"status": "success", "message": f"Utilisateur {username} supprimé avec succès."}
+            else:
+                return {"status": "error", "message": "L'utilisateur n'existe pas."}
+        except Exception as e:
+            return {"status": "error", "message": f"Erreur lors de la suppression de l'utilisateur : {e}"}
+
+
+
+    def modify_user(self,username,new_username,new_password,ch):
+        try:
+            self.utilisateurs = self.load_users()
+
+            if username in self.utilisateurs:
+                # Get the current user data
+                current_data = self.utilisateurs[username]
+
+                self.utilisateurs[new_username] = self.utilisateurs.pop(new_username)
+                return {"status": "success", "message": f"Utilisateur {username} supprimé avec succès."}
+
+
+                # Save the modified user data
+                self.save_users()
+
+
+            else:
+                return {"status": "error", "message": "L'utilisateur n'existe pas."}
+
+        except Exception as e:
+            return {"status": "error", "message": f"Erreur lors de la modification de l'utilisateur : {e}"}
+
+    # ...
 
     def stop_server(self):
         self.server_socket.close()

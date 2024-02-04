@@ -1,255 +1,71 @@
 import socket
-import os
 import json
 
-def save_users(utilisateurs):
-    with open("utilisateurs.json", "w") as json_file:
-        json.dump(utilisateurs, json_file)
-def load_users():
-    try:
-        with open("utilisateurs.json", "r") as json_file:
-            return json.load(json_file)
-    except FileNotFoundError:
-        return {}
+class Client:
+    def __init__(self):
+        self.HOST = '127.0.1.1'
+        self.PORT = 1217
+        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_socket.connect((self.HOST, self.PORT))
 
-def create_account(username, password):
-    global utilisateurs
-
-    # Vérifier si le compte existe déjà
-    if username in utilisateurs:
-        return "Le nom d'utilisateur existe déjà. Veuillez choisir un autre nom d'utilisateur."
-
-    # Créer le compte avec un annuaire vide
-    annuaire_filename = f"{username}_annuaire.txt"
-    utilisateurs[username] = {'password': password, 'annuaire': annuaire_filename}
-    save_users(utilisateurs)
-
-    return "Compte créé avec succès."
-def login( username, password):
-    global utilisateurs
-
-    # Charger les utilisateurs depuis le fichier JSON
-    utilisateurs = load_users()
-
-    # Vérifier si les informations d'identification sont correctes
-    if username in utilisateurs and utilisateurs[username]['password'] == password:
-        connected_menu(username)
-    return perform_action("login", username, password)
-def connected_menu(username):
-    while True:
-        print(f"Bonjour, {username}!")
-        print("1. Ajouter un contact à l'annuaire")
-        print("2. Supprimer un contact de l'annuaire")
-        print("3. Modifier un contact de l'annuaire")
-        print("4.affichier mes contacts")
-        print("5. Se déconnecter")
-
-        choice = input("Choisissez une option : ")
-
-
-        if choice == "1":
-            ajouter_contact(username)
-        elif choice == "2":
-            supprimer_contact(username)
-        elif choice == "3":
-            modifier_contact(username)
-        elif choice == "4":
-            get_annuaire(username)
-        elif choice == "5":
-            logout(username)
-            break
-        else:
-            print("Option non valide. Veuillez réessayer.")
-
-def logout(username):
-    perform_action("logout", username, "")
-
-def get_annuaire(username):
-    perform_action("get_annuaire", username, "")
-
-def ajouter_contact(username):
-    global utilisateurs
-
-    # Charger les utilisateurs depuis le fichier JSON
-    utilisateurs = load_users()
-
-    # Vérifier si l'utilisateur est dans la liste des utilisateurs
-    if username in utilisateurs:
-
-        # Nom du fichier utilisateur
-        filename = utilisateurs[username]['annuaire']
-
-        nom = input("Entrez le nom du contact : ")
-        prenom = input("Entrez le prénom du contact : ")
-        email = input("Entrez l'email du contact : ")
-        telephone = input("Entrez le numéro de téléphone du contact : ")
-
-        # Lire les contacts actuels du fichier ou créer le fichier s'il n'existe pas
+    def send_request(self, action, *params):
         try:
-            with open(filename, 'r') as user_file:
-                lines = user_file.readlines()
-        except FileNotFoundError:
-            with open(filename, 'w') as user_file:
-                user_file.write("Nom,Prénom,Email,Téléphone\n")
-            lines = []
+            request_data = {"action": action, "params": params}
+            # Convert sets to lists for serialization
+            request_data["params"] = [list(param) if isinstance(param, set) else param for param in
+                                      request_data["params"]]
+            # Check if there's only one parameter and convert it to a list if needed
+            if len(request_data["params"]) == 1:
+                request_data["params"] = request_data["params"][0]
+            request_json = json.dumps(request_data)
+            self.client_socket.send(request_json.encode('utf-8'))
 
-        # Vérifier si le contact existe déjà
-        contact_exists = any(f"{nom},{prenom},{email},{telephone}" in line for line in lines)
+            response_data = self.client_socket.recv(1024)
 
-        if not contact_exists:
-            # Ajouter le contact à l'annuaire de l'utilisateur
-            with open(filename, 'a') as user_file:
-                user_file.write(f"{nom},{prenom},{email},{telephone}\n")
-
-            print("Contact ajouté avec succès.")
-        else:
-            print("Le contact existe déjà.")
-
-    else:
-        print("Vous n'êtes pas connecté.")
-def supprimer_contact(username):
-    global utilisateurs
-
-    # Vérifier si l'utilisateur est connecté
-    if username in utilisateurs:    # Nom du fichier utilisateur
-        filename = f"{username}_annuaire.txt"
-
-        # Lire les contacts actuels du fichier
-        with open(filename, 'r') as user_file:
-            lines = user_file.readlines()
-
-        if not lines or len(lines) == 1:
-            print("Aucun contact à supprimer.")
-            return
-
-        # Afficher les contacts actuels pour que l'utilisateur puisse choisir
-        print("Contacts actuels:")
-        for i, line in enumerate(lines[1:], start=1):
-            print(f"{i}. {line.strip()}")
-
-        # Demander à l'utilisateur de choisir le contact à supprimer
-        try:
-            index_to_remove = int(input("Entrez le numéro du contact à supprimer : "))
-            if 1 <= index_to_remove <= len(lines) - 1:
-                # Supprimer le contact choisi
-                removed_contact = lines.pop(index_to_remove)
-                print(f"Contact supprimé : {removed_contact.strip()}")
-
-                # Réécrire les contacts dans le fichier
-                with open(filename, 'w') as user_file:
-                    user_file.write(lines[0])  # Écrire l'en-tête
-                    user_file.writelines(lines[1:])
-            else:
-                print("Numéro de contact invalide.")
-        except ValueError:
-            print("Veuillez entrer un numéro valide.")
-    else:
-        print("Vous n'êtes pas connecté.")
-
-def modifier_contact(username):
-    global utilisateurs
-
-    # Vérifier si l'utilisateur est connecté
-    if username in utilisateurs:
-            # Nom du fichier utilisateur
-            filename = f"{username}_annuaire.txt"
-
-            # Lire les contacts actuels du fichier
-            with open(filename, 'r') as user_file:
-                lines = user_file.readlines()
-
-            if not lines or len(lines) == 1:
-                print("Aucun contact à modifier.")
+            if not response_data:
+                print("Empty response received")
                 return
 
-            # Afficher les contacts actuels pour que l'utilisateur puisse choisir
-            print("Contacts actuels:")
-            for i, line in enumerate(lines[1:], start=1):
-                print(f"{i}. {line.strip()}")
+            response = json.loads(response_data.decode('utf-8'))
+            print(response)
+            return response
 
-            # Demander à l'utilisateur de choisir le contact à modifier
-            try:
-                index_to_modify = int(input("Entrez le numéro du contact à modifier : "))
-                if 1 <= index_to_modify <= len(lines) - 1:
-                    # Récupérer les détails du contact à modifier
-                    contact_details = lines[index_to_modify].strip().split(',')
+        except ConnectionAbortedError:
+            print("Connection aborted by host")
+            return None
 
-                    # Afficher les détails actuels du contact
-                    print("Détails actuels du contact:")
-                    print(f"1. Nom: {contact_details[0]}")
-                    print(f"2. Prénom: {contact_details[1]}")
-                    print(f"3. Email: {contact_details[2]}")
-                    print(f"4. Téléphone: {contact_details[3]}")
+    # Modifiez la méthode ajouter_contact dans la classe Client
+    def ajouter_contact(self, username, nom, prenom, email, telephone):
+        return self.send_request("ajouter_contact", username,nom,prenom,email,telephone)
 
-                    # Demander à l'utilisateur de choisir le champ à modifier
-                    field_to_modify = int(input("Entrez le numéro du champ à modifier : "))
+    def create_account(self, username, password):
+        return self.send_request("create_account", username, password)
 
-                    # Demander à l'utilisateur de saisir la nouvelle valeur
-                    new_value = input("Entrez la nouvelle valeur : ")
+    def login(self, username, password):
+        print("Sending login request...")
+        response = client.send_request("login", username, password)
+        print("Received response:", response)
+        return self.send_request("login", username, password)
 
-                    # Modifier le champ choisi
-                    contact_details[field_to_modify - 1] = new_value
+    def close_connection(self):
+        self.client_socket.close()
 
-                    # Mettre à jour la ligne dans la liste des contacts
-                    lines[index_to_modify] = ','.join(contact_details) + '\n'
+    def recherche_contact(self,username, nom, prenom):
+         return self.send_request("recherche_contact",username, nom, prenom)
 
-                    print("Contact modifié avec succès.")
+    def afficher_contacts(self,username):
+       return self.send_request("afficher_contacts", username)
 
-                    # Réécrire les contacts dans le fichier
-                    with open(filename, 'w') as user_file:
-                        user_file.write(lines[0])  # Écrire l'en-tête
-                        user_file.writelines(lines[1:])
-                else:
-                    print("Numéro de contact invalide.")
-            except ValueError:
-                print("Veuillez entrer un numéro valide.")
-    else:
-            print("Vous n'êtes pas connecté.")
+    def modifier_contact(self,username,nom,prenom,change,new_value):
+       return self.send_request("modifier_contact", username,nom,prenom,change,new_value)
+
+    # Ajouter cette méthode à votre classe Client
+    def supprimer_contact(self, username, nom, prenom):
+        return self.send_request("supprimer_contact", username, nom, prenom)
 
 
-def perform_action(action, username, password):
-    # Configuration du client
-    host = '127.0.0.1'
-    port = 12345
-
-    # Création du socket du client
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect((host, port))
-
-    # Envoi des données au serveur
-    data = f"{action},{username},{password}"
-    client.send(data.encode('utf-8'))
-
-    # Recevoir la réponse du serveur
-    response = client.recv(1024).decode('utf-8')
-    print(f"[*] Réponse du serveur : {response}")
-
-    # Si l'action est de récupérer l'annuaire, imprimer l'annuaire
-    if action == "get_annuaire":
-        # Nom du fichier utilisateur
-        filename = f"{username}_annuaire.txt"
-
-        # Lire les contacts actuels du fichier
-        with open(filename, 'r') as user_file:
-            lines = user_file.readlines()
-
-        if not lines or len(lines) == 1:
-            print("Aucun contact à modifier.")
-            return
-
-        # Afficher les contacts actuels pour que l'utilisateur puisse choisir
-        print("Contacts actuels:")
-        for i, line in enumerate(lines[1:], start=1):
-            print(f"{i}. {line.strip()}")
-
-    if action=="logout" :
-        main()
-    # Fermer la connexion
-    #client.close()
-    #return response
-
-def main():
-    utilisateurs = load_users()
+if __name__ == "__main__":
+    client = Client()
 
     while True:
         print("1. Créer un compte")
@@ -261,20 +77,109 @@ def main():
         if choice == "1":
             username = input("Entrez le nom d'utilisateur : ")
             password = input("Entrez le mot de passe : ")
-            response = create_account(username, password)
-            print(response)
+            create_account_response = client.create_account(username, password)
+            print(create_account_response)
 
         elif choice == "2":
             username = input("Entrez le nom d'utilisateur : ")
             password = input("Entrez le mot de passe : ")
-            response = login(username, password)
-            if "Connexion réussie" in response:
-                connected_menu(username)
-            else:
-                print(response)
+            try:
+                login_response = client.login(username, password)
+                # Le reste de votre code...
+
+                if login_response and "status" in login_response and login_response["status"] == "success":
+                    while True:
+                        print(f"Bonjour, {username}!")
+                        print("1. Ajouter un contact à l'annuaire")
+                        print("2. Supprimer un contact de l'annuaire")
+                        print("3. Modifier un contact de l'annuaire")
+                        print("4.affichier mes contacts")
+                        print("5.recherche d'un contact")
+                        print("6. Se déconnecter")
+
+                        choice = input("Choisissez une option : ")
+
+                        if choice == "1":
+                            nom = input("Entrez le nom du contact : ")
+                            prenom = input("Entrez le prénom du contact : ")
+                            email = input("Entrez l'email du contact : ")
+                            telephone = input("Entrez le numéro de téléphone du contact : ")
+                            client.ajouter_contact(username, nom, prenom, email, telephone)
+                        elif choice == "2":
+                            nom = input("Entrez le nom du contact que vous voulez modifier: ")
+                            prenom = input("Entrez le prénom du contact que vous voulez modifier: ")
+                            response = client.recherche_contact(username, nom, prenom)
+                            if response["status"] == "success":
+                                print("Client found.")
+                                client.supprimer_contact(username,nom,prenom)
+                            else:
+                                print("Client not found.")
+
+                        elif choice == "3":
+                            nom = input("Entrez le nom du contact que vous voulez modifier: ")
+                            prenom = input("Entrez le prénom du contact que vous voulez modifier: ")
+                            response = client.recherche_contact(username, nom, prenom)
+                            if response["status"] == "success":
+                                print("Client found.")
+                                # Prompt the client for the field to modify
+                                print("Choisissez le champ que vous voulez modifier:")
+                                print("1. Nom")
+                                print("2. Prénom")
+                                print("3. Email")
+                                print("4. Téléphone")
+
+                                choice = input("Entrez le numéro du champ que vous voulez modifier: ")
+                                if choice == "1":
+                                    change = "nom"
+                                    new_value = input("donner le nouveau nom:")
+                                    client.modifier_contact(username, nom, prenom, change, new_value)
+                                elif choice == "2":
+                                    change = "prenom"
+                                    new_value = input("donner le nouveau prenom:")
+                                    client.modifier_contact(username, nom, prenom, change, new_value)
+                                elif choice == "3":
+                                    change = "email"
+                                    new_value = input("donner le nouveau mail")
+                                    client.modifier_contact(username, nom, prenom, change, new_value)
+                                elif choice == "4":
+                                    change = "telephone"
+                                    new_value = input("donner le nouveau telephone:")
+                                    client.modifier_contact(username, nom, prenom, change, new_value)
+                                else:
+                                    print("Choix invalide.")
+
+                            else:
+                                print("Client not found.")
+
+
+                        # modifier_contact(username)
+                        elif choice == "4":
+                          client.afficher_contacts(username)
+
+                        elif choice == "5":
+                            nom = input("Entrez le nom du contact que vous cherchez : ")
+                            prenom = input("Entrez le prénom du contact que vous cherchez : ")
+                            client.recherche_contact(username,nom,prenom)
+
+                        elif choice == "6":
+                            break
+                        else:
+                            print("Option non valide. Veuillez réessayer.")
+
+
+                else:
+                    print(f"Échec de la connexion : {login_response.get('message', 'Erreur inconnue')}")
+
+            except Exception as e:
+                    print(f"Erreur lors de la connexion : {e}")
+
         elif choice == "3":
             break
         else:
             print("Option non valide. Veuillez réessayer.")
-if __name__ == "__main__":
-    main()
+
+  # Exemple d'une action non valide
+    # invalid_action_response = client.send_request("invalid_action", "user1", "pass123")
+    # print(invalid_action_response)
+
+   # client.client_socket.close()

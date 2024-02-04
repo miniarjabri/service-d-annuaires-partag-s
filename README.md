@@ -5,8 +5,6 @@ en réseau.
 Le serveur de l’application stockera dans un ou plusieurs fichiers texte les données de ces annuaires
 partagés. Il aura donc à gérer plusieurs annuaires. Chaque annuaire est associé à un utilisateur qui a un compte.
 
-ATTENTION : Ne pas utiliser une base de données
-
 Pour chaque contact dans l’annuaire, on stockera : le nom, le prénom, le numéro de téléphone portable, l’adresse
 postale, l’adresse mail. Les champs nom, prénom et adresse mail sont obligatoires.
 

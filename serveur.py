@@ -277,7 +277,7 @@ def delete_user(client_socket,username):
 
 
         annuaire_filename = f"{username}_annuaire.txt"
-        print(annuaire_filename)
+        del annuaire_filename
         try:
             # Vérifier si le fichier existe avant de tenter de le supprimer
             if os.path.exists(annuaire_filename):

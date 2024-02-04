@@ -173,10 +173,9 @@ def delete_user():
             #-------------------------------------------------
 
             if username in utilisateurs:
-
-
                 annuaire_filename = f"{username}_annuaire.txt"
-                print(annuaire_filename)
+                del annuaire_filename
+
                 try:
                     # Vérifier si le fichier existe avant de tenter de le supprimer
                     if os.path.exists(annuaire_filename):
@@ -468,6 +467,7 @@ def main():
     port=12345
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.connect((host,port))
+
 
 
 
